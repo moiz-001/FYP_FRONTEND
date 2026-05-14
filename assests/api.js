@@ -1,4 +1,4 @@
-export const BASE_URL = 'http://192.168.100.74:5000';
+export const BASE_URL = 'http://192.168.141.161:5000';
 
 const handleResponse = async (response) => {
     if (!response.ok) {
