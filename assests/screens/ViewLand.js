@@ -241,7 +241,7 @@ const ViewLand = ({ navigation, route }) => {
                                             {isPublic ? 'Public' : 'Private'}
                                         </Text> */}
                                     </View>
-                                    <TouchableOpacity
+                                    { /*<TouchableOpacity
                                         style={styles.chatIcon}
                                         onPress={() => navigation.navigate('ChatHistory', { id: fid })}
                                     >
@@ -250,7 +250,7 @@ const ViewLand = ({ navigation, route }) => {
                                             size={hp('3.5%')}
                                             color="#1ED760"
                                         />
-                                    </TouchableOpacity>
+                                    </TouchableOpacity>*/}
                                 </View>
                             </View>
 
@@ -305,6 +305,7 @@ const ViewLand = ({ navigation, route }) => {
                                                             <Text style={styles.activityText}>
                                                                 {activity.activity_name}
                                                             </Text>
+
                                                             <View style={styles.activityMeta}>
                                                                 <Text style={styles.activityDate}>
                                                                     {activity.suggested_date || 'TBD'}

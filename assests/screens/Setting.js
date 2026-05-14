@@ -445,9 +445,9 @@ const Setting = ({ navigation, route }) => {
                         province: provinceId,
                         city: farmer.City || '',
                         landmark: farmer.Landmark || '',
-                        yearsOfExp: farmer.years_of_experience?.toString() || '',
-                        password: '',
-                        confirmPassword: ''
+                        experience: farmer.years_of_experience?.toString() || '',
+                        password: farmer.password,
+                        confirmPassword: farmer.password
                     });
 
                     if (farmer.image) {
@@ -582,7 +582,7 @@ const Setting = ({ navigation, route }) => {
                 landmark: formData.landmark,
                 city: formData.city,
                 password: formData.password,
-                years_of_experience: formData.yearsOfExp
+                experience: formData.yearsOfExp
             };
 
             const data = new FormData();

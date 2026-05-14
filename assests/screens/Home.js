@@ -13,7 +13,7 @@ import {
     Alert
 } from "react-native";
 import { Icon } from "react-native-paper";
-import { getFarmer, getLands, getReminders, GetAllNeighboursWithLatestCrop, BASE_URL, accountdate } from "../api";
+import { getFarmer, getLands, getReminders, getAlerts, GetAllNeighboursWithLatestCrop, BASE_URL, accountdate } from "../api";
 import { useFocusEffect } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Calendar } from 'react-native-calendars';
@@ -38,7 +38,9 @@ const Home = ({ navigation, route }) => {
 
     const [landDetails, setLandDetails] = useState([]);
     const [reminders, setReminders] = useState([]);
+    const [alerts, setAlerts] = useState([]);
     const [remindersLoading, setRemindersLoading] = useState(false);
+    const [alertsLoading, setAlertsLoading] = useState(false);
     const [farmer, setFarmer] = useState({});
     const [lands, setLands] = useState([]);
     const [cityName, setCityName] = useState(null);
@@ -122,11 +124,31 @@ const Home = ({ navigation, route }) => {
             } else {
                 setReminders([]);
             }
+            // Fetch alerts after reminders succeed (matches Flutter flow)
+            fetchAlertsData(landId);
         } catch (error) {
             console.log('Error fetching reminders:', error);
             setReminders([]);
+            setAlerts([]);
         } finally {
             setRemindersLoading(false);
+        }
+    };
+
+    const fetchAlertsData = async (landId) => {
+        setAlertsLoading(true);
+        try {
+            const data = await getAlerts(landId);
+            if (data && Array.isArray(data)) {
+                setAlerts(data);
+            } else {
+                setAlerts([]);
+            }
+        } catch (error) {
+            console.log('Error fetching alerts:', error);
+            setAlerts([]);
+        } finally {
+            setAlertsLoading(false);
         }
     };
 
@@ -311,44 +333,69 @@ const Home = ({ navigation, route }) => {
                         </View>
                         <View style={[ss.divider, { backgroundColor: 'rgba(255,255,255,0.3)', marginVertical: 6 }]} />
                         <View style={ss.alertsList}>
-                            {remindersLoading ? (
+                            {(remindersLoading || alertsLoading) ? (
                                 <View style={ss.alertsLoadingContainer}>
                                     <ActivityIndicator size="small" color="#fff" />
-                                    <Text style={ss.alertsLoadingText}>Checking reminders...</Text>
+                                    <Text style={ss.alertsLoadingText}>Checking alerts...</Text>
                                 </View>
-                            ) : reminders.length > 0 ? (
-                                reminders.map((item, index) => (
-                                    <View key={item.suggested_activity_id || index} style={ss.alertItem}>
-                                        <View style={ss.alertItemLeft}>
-                                            <Icon
-                                                source={item.status === 'postponed' ? 'clock-alert-outline' : 'checkbox-blank-circle-outline'}
-                                                size={18}
-                                                color={item.status === 'postponed' ? '#FFD54F' : '#fff'}
-                                            />
-                                            <View style={ss.alertItemInfo}>
-                                                <Text style={ss.alertActivityName}>{item.activity_name}</Text>
-                                                <Text style={ss.alertWhen}>{item.when || item.day_count}</Text>
-                                                {item.weather_note ? (
-                                                    <View style={ss.alertWeatherRow}>
-                                                        <Icon source="weather-lightning-rainy" size={12} color="#FFD54F" />
-                                                        <Text style={ss.alertWeatherNote}>{item.weather_note}</Text>
-                                                    </View>
-                                                ) : null}
+                            ) : (alerts.length > 0 || reminders.length > 0) ? (
+                                <>
+                                    {/* Alerts from getAlerts endpoint */}
+                                    {alerts.map((alertItem, index) => (
+                                        <View key={`alert-${index}`} style={ss.alertItem}>
+                                            <View style={ss.alertItemLeft}>
+                                                <Icon
+                                                    source="alert-circle-outline"
+                                                    size={18}
+                                                    color="#FFD54F"
+                                                />
+                                                <View style={ss.alertItemInfo}>
+                                                    <Text style={ss.alertActivityName}>
+                                                        {alertItem.alerts} on {alertItem.crop} in {cityName}
+                                                    </Text>
+                                                </View>
+                                            </View>
+                                            <View style={[ss.alertStatusBadge, { backgroundColor: 'rgba(255,213,79,0.25)' }]}>
+                                                <Text style={[ss.alertStatusText, { color: '#FFD54F' }]}>Alert</Text>
                                             </View>
                                         </View>
-                                        <View style={[ss.alertStatusBadge, {
-                                            backgroundColor: item.status === 'postponed' ? 'rgba(255,213,79,0.25)' : 'rgba(255,255,255,0.2)'
-                                        }]}>
-                                            <Text style={[ss.alertStatusText, {
-                                                color: item.status === 'postponed' ? '#FFD54F' : '#fff'
+                                    ))}
+
+                                    {/* Reminders from getReminders endpoint */}
+                                    {reminders.map((item, index) => (
+                                        <View key={item.suggested_activity_id || `rem-${index}`} style={ss.alertItem}>
+                                            <View style={ss.alertItemLeft}>
+                                                <Icon
+                                                    source={item.status === 'postponed' ? 'clock-alert-outline' : 'checkbox-blank-circle-outline'}
+                                                    size={18}
+                                                    color={item.status === 'postponed' ? '#FFD54F' : '#fff'}
+                                                />
+                                                <View style={ss.alertItemInfo}>
+                                                    <Text style={ss.alertActivityName}>
+                                                        {item.activity_name} {item.status} {item.day_count}
+                                                    </Text>
+                                                    {item.weather_note ? (
+                                                        <View style={ss.alertWeatherRow}>
+                                                            <Icon source="weather-lightning-rainy" size={12} color="#FFD54F" />
+                                                            <Text style={ss.alertWeatherNote}>{item.weather_note}</Text>
+                                                        </View>
+                                                    ) : null}
+                                                </View>
+                                            </View>
+                                            <View style={[ss.alertStatusBadge, {
+                                                backgroundColor: item.status === 'postponed' ? 'rgba(255,213,79,0.25)' : 'rgba(255,255,255,0.2)'
                                             }]}>
-                                                {item.status}
-                                            </Text>
+                                                <Text style={[ss.alertStatusText, {
+                                                    color: item.status === 'postponed' ? '#FFD54F' : '#fff'
+                                                }]}>
+                                                    {item.status}
+                                                </Text>
+                                            </View>
                                         </View>
-                                    </View>
-                                ))
+                                    ))}
+                                </>
                             ) : (
-                                <Text style={ss.noDataText}>No upcoming alerts</Text>
+                                <Text style={ss.noDataText}>No Alerts found</Text>
                             )}
                         </View>
                     </View>

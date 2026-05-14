@@ -1,4 +1,4 @@
-export const BASE_URL = 'http://192.168.100.28:5000';
+export const BASE_URL = 'http://192.168.100.74:5000';
 
 const handleResponse = async (response) => {
     if (!response.ok) {
@@ -213,6 +213,13 @@ export const getSuggestedActivities = async (sessionId) => {
 export const getReminders = async (landId) => {
     try {
         const res = await fetch(`${BASE_URL}/getReminders/${landId}`);
+        return await handleResponse(res);
+    } catch (error) { throw error; }
+};
+
+export const getAlerts = async (landId) => {
+    try {
+        const res = await fetch(`${BASE_URL}/getAlerts/${landId}`);
         return await handleResponse(res);
     } catch (error) { throw error; }
 };

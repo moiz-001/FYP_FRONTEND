@@ -7,6 +7,7 @@ import Modal from 'react-native-modal';
 import { getLandsWithCurrentSession, getActivitiesList, BASE_URL } from '../api';
 import { Calendar } from 'react-native-calendars';
 
+
 const AddActivity = ({ navigation, route }) => {
     const editActivity = route.params?.activity;
     const farmerId = route.params?.id;
@@ -19,6 +20,7 @@ const AddActivity = ({ navigation, route }) => {
     const [date, setDate] = useState(editActivity?.date || '');
     const [profit, setProfit] = useState('');
     const [amountPerAcre, setAmountPerAcre] = useState('');
+    const [isHarvesting, SetisHarvesting] = useState('')
 
     const [lands, setLands] = useState([]);
     const [activityTypes, setActivityTypes] = useState([]);
@@ -61,6 +63,25 @@ const AddActivity = ({ navigation, route }) => {
 
         fetchData();
     }, [farmerId]);
+
+    useEffect(() => {
+
+        const selectedActivityObj = activityTypes.find(
+            a => a.value === activityType
+        );
+
+        if (selectedActivityObj?.name === "Harvesting") {
+            SetisHarvesting("Harvesting");
+        }
+        else if (selectedActivityObj?.name === "Disease and Pest Attack") {
+            SetisHarvesting("Disease and Pest Attack");
+        }
+        else {
+            SetisHarvesting("other");
+        }
+
+    }, [activityType, activityTypes]);
+
 
     const showDatePicker = () => {
         setDatePickerVisibility(true);
@@ -119,8 +140,8 @@ const AddActivity = ({ navigation, route }) => {
     };
 
     const selectedActivityObj = activityTypes.find(a => a.value === activityType);
-    const isHarvesting = selectedActivityObj && selectedActivityObj.name === "Harvesting";
-
+    // const isHarvesting = selectedActivityObj && selectedActivityObj.name === "Harvesting";
+    // const isdiesease = selectedActivityObj && selectedActivityObj.name === "Disease and Pest Attack";
     return (
         <SafeAreaView style={styles.main}>
             <View style={styles.header}>
@@ -156,49 +177,104 @@ const AddActivity = ({ navigation, route }) => {
                     valueField="value"
                     placeholder="Select Activity"
                     value={activityType}
-                    onChange={item => setActivityType(item.value)}
+                    onChange={item => {
+                        setActivityType(item.value);
+                    }
+                    }
                 />
 
-                <View style={styles.inputBox}>
-                    <TextInput
-                        style={styles.txtinpp}
-                        placeholder="Type"
-                        value={type}
-                        onChangeText={setType}
-                    />
-                </View>
+                {isHarvesting === "other" && (
+                    <View>
 
-                <View style={styles.inputBox}>
-                    <TextInput
-                        style={styles.txtinpp}
-                        placeholder="Quantity per Acre"
-                        value={quantity}
-                        onChangeText={setQuantity}
-                        keyboardType="number-pad"
-                    />
-                </View>
-
-                {isHarvesting && (
-                    <View style={styles.harvestingContainer}>
                         <View style={styles.inputBox}>
                             <TextInput
                                 style={styles.txtinpp}
-                                placeholder="Profit (yes/no)"
-                                value={profit}
-                                onChangeText={setProfit}
+                                placeholder="Type"
+                                value={type}
+                                onChangeText={setType}
                             />
                         </View>
+
                         <View style={styles.inputBox}>
                             <TextInput
                                 style={styles.txtinpp}
-                                placeholder="Amount Per Acre"
-                                value={amountPerAcre}
-                                onChangeText={setAmountPerAcre}
+                                placeholder="Quantity per Acre"
+                                value={quantity}
+                                onChangeText={setQuantity}
                                 keyboardType="number-pad"
                             />
                         </View>
                     </View>
                 )}
+
+                {isHarvesting === "Harvesting" && (
+                    <View>
+
+                        <View style={styles.inputBox}>
+                            <TextInput
+                                style={styles.txtinpp}
+                                placeholder="Type"
+                                value={type}
+                                onChangeText={setType}
+                            />
+                        </View>
+
+                        <View style={styles.inputBox}>
+                            <TextInput
+                                style={styles.txtinpp}
+                                placeholder="Quantity per Acre"
+                                value={quantity}
+                                onChangeText={setQuantity}
+                                keyboardType="number-pad"
+                            />
+                        </View>
+
+                        <View style={styles.harvestingContainer}>
+                            <View style={styles.inputBox}>
+                                <TextInput
+                                    style={styles.txtinpp}
+                                    placeholder="Profit (yes/no)"
+                                    value={profit}
+                                    onChangeText={setProfit}
+                                />
+                            </View>
+                            <View style={styles.inputBox}>
+                                <TextInput
+                                    style={styles.txtinpp}
+                                    placeholder="Amount Per Acre"
+                                    value={amountPerAcre}
+                                    onChangeText={setAmountPerAcre}
+                                    keyboardType="number-pad"
+                                />
+                            </View>
+                        </View>
+                    </View>
+                )}
+
+                {isHarvesting === "Disease and Pest Attack" && (
+                    <View>
+
+                        <View style={styles.inputBox}>
+                            <TextInput
+                                style={styles.txtinpp}
+                                placeholder="Detail OF Attack"
+                                value={type}
+                                onChangeText={setType}
+                            />
+                        </View>
+
+                        <View style={styles.inputBox}>
+                            <TextInput
+                                style={styles.txtinpp}
+                                placeholder="Pervention"
+                                value={quantity}
+                                onChangeText={setQuantity}
+                            />
+                        </View>
+                    </View>
+                )}
+
+
 
                 <TouchableOpacity style={styles.inputBox} onPress={showDatePicker}>
                     <TextInput
